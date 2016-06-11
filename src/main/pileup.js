@@ -12,6 +12,7 @@ import ReactDOM from 'react-dom';
 
 // Data sources
 import TwoBitDataSource from './sources/TwoBitDataSource';
+import ReferenceDataSource from './sources/ReferenceDataSource';
 import BigBedDataSource from './sources/BigBedDataSource';
 import VcfDataSource from './sources/VcfDataSource';
 import BamDataSource from './sources/BamDataSource';
@@ -124,6 +125,7 @@ var pileup = {
     ga4gh: GA4GHDataSource.create,
     vcf: VcfDataSource.create,
     twoBit: TwoBitDataSource.create,
+    reference: ReferenceDataSource.create,
     bigBed: BigBedDataSource.create,
     empty: EmptySource.create
   },
