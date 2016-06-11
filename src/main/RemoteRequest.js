@@ -1,5 +1,5 @@
 /**
- * RemoteFile is a representation of a file on a remote server which can be
+ * RemoteRequest is used to for http requests on a remote server which can be
  * fetched in chunks, e.g. using a Range request.
  * @flow
  */
