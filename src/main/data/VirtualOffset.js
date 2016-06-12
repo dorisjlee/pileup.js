@@ -6,6 +6,7 @@
  * JavaScript.
  * @flow
  */
+'use strict';
 
 class VirtualOffset {
   coffset: number;

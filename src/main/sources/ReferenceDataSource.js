@@ -19,9 +19,9 @@ import Q from 'q';
 import _ from 'underscore';
 import {Events} from 'backbone';
 
+import RemoteRequest from '../RemoteRequest';
 import ContigInterval from '../ContigInterval';
-import TwoBit from '../data/TwoBit';
-import RemoteFile from '../RemoteFile';
+import Sequence from '../data/Sequence';
 import SequenceStore from '../SequenceStore';
 import utils from '../utils';
 
@@ -57,23 +57,17 @@ function expandRange(range) {
 }
 
 
-var createFromReferenceUrl = function(): ReferenceSource {
+var createFromReferenceUrl = function(remoteRequest: Sequence): ReferenceSource {
   // Local cache of genomic data.
-  var contigList = [];
+  // Fetch the contig list immediately.
+  var contigList = remoteRequest.getContigList();
+  o.trigger('contigs', contigList);
+
   var store = new SequenceStore();
-
-  var url = "/reference/" + "chrM" + "?start=" + 0 + "&end=" + 200;
-  console.log(url);
-  var xmlHttp = new XMLHttpRequest();
-  xmlHttp.open( "GET", url, false ); // false for synchronous request
-  xmlHttp.send( null );
-  console.log(xmlHttp);
-  console.log(xmlHttp.responseText);
-  alert(xmlHttp.responseText);
-
 
   // Ranges for which we have complete information -- no need to hit network.
   var coveredRanges = ([]: ContigInterval<string>[]);
+
 
   function fetch(range: ContigInterval) {
     var span = range.length();
@@ -81,15 +75,24 @@ var createFromReferenceUrl = function(): ReferenceSource {
       return Q.when();  // empty promise
     }
 
-    // TODO: fetch JSON from file
-
-
-    store.setRange(range, letters);
-    o.trigger('newdata', range);
+    console.log(`Fetching ${span} base pairs`);
+    remoteRequest.getFeaturesInRange(range.contig, range.start(), range.stop())
+      .then(letters => {
+        if (!letters) return;
+        if (letters.length < range.length()) {
+          // Probably at EOF
+          range = new ContigInterval(range.contig,
+                                     range.start(),
+                                     range.start() + letters.length - 1);
+        }
+        store.setRange(range, letters);
+      }).then(() => {
+        o.trigger('newdata', range);
+      }).done();
   }
 
     function normalizeRange(range: GenomeRange): Q.Promise<GenomeRange> {
-      return contigPromise.then(() => normalizeRangeSync(range));
+      return normalizeRangeSync(range);
     }
 
     // Returns a {"chr12:123" -> "[ATCG]"} mapping for the range.
@@ -118,14 +121,6 @@ var createFromReferenceUrl = function(): ReferenceSource {
       }
       return range;  // let it fail with the original contig
     }
-
-  // Fetch the contig list immediately.
-  var contigPromise = remoteSource.getContigList().then(c => {
-    contigList = c;
-    o.trigger('contigs', contigList);
-    return c;
-  });
-  contigPromise.done();
 
   var o = {
     // The range here is 0-based, inclusive
@@ -165,26 +160,26 @@ var createFromReferenceUrl = function(): ReferenceSource {
   return o;
 };
 
-function create(data: {prefix:string}): ReferenceSource {
+function create(data: {prefix:string, contigList: string[]}): ReferenceSource {
   var urlPrefix = data.prefix;
+  var contigList = data.contigList;
+
+  // verify data was correctly set
   if (!urlPrefix) {
     throw new Error(`Missing URL from track: ${JSON.stringify(data)}`);
   }
-
-  return createFromReferenceUrl();
-}
-// Getter/setter for base pairs per fetch.
-// This should only be used for testing.
-function testReferenceToFetch(num?: number): any {
-  if (num) {
-    BASE_PAIRS_PER_FETCH = num;
-  } else {
-    return BASE_PAIRS_PER_FETCH;
+  if (!contigList) {
+    throw new Error(`Missing Contig List from track: ${JSON.stringify(data)}`);
   }
+
+  // create request with url prefix
+  var remoteRequest= new RemoteRequest(urlPrefix);
+  var sequence = new Sequence(remoteRequest, contigList);
+
+  return createFromReferenceUrl(sequence);
 }
 
 module.exports = {
   create,
-  createFromReferenceUrl,
-  testReferenceToFetch
+  createFromReferenceUrl
 };
