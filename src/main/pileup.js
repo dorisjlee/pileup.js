@@ -17,6 +17,7 @@ import VcfDataSource from './sources/VcfDataSource';
 import BamDataSource from './sources/BamDataSource';
 import GA4GHDataSource from './sources/GA4GHDataSource';
 import EmptySource from './sources/EmptySource';
+import FeatureDataSource from './sources/FeatureDataSource';
 
 // Visualizations
 import CoverageTrack from './viz/CoverageTrack';
