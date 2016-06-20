@@ -7,6 +7,13 @@
 
 import Q from 'q';
 
+type Chunk = {
+  start: number;
+  stop: number;
+  buffer: ArrayBuffer;
+  // TODO(danvk): priority: number;
+}
+
 class RemoteRequest {
   url: string;
   chunks: Array<Chunk>;  // regions of file that have already been loaded.
@@ -19,7 +26,8 @@ class RemoteRequest {
   }
 
   get(contig: string, start: number, stop: number): Q.Promise<ArrayBuffer> {
-    if (stop - start <= 0) {
+    var length = stop - start;
+    if (length <= 0) {
       return Q.reject(`Requested <0 bytes (${length}) from ${this.url}`);
     }
 
@@ -47,6 +55,7 @@ class RemoteRequest {
      * Request must be of form "url/contig?start=start&end=stop"
     */
   getFromNetwork(contig: string, start: number, stop: number): Q.Promise<ArrayBuffer> {
+    var length = stop - start;
     if (length > 50000000) {
       throw `Monster request: Won't fetch ${length} bytes from ${this.url}`;
     }
