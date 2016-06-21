@@ -7,6 +7,22 @@
 
 import Q from 'q';
 
+type Chunk = {
+  start: number;
+  stop: number;
+  buffer: ArrayBuffer; // TODO: generalize to Any
+}
+
+// Define transition from json to object in
+function stringToBuffer(str: string): ArrayBuffer {
+  var buf = new ArrayBuffer(str.length); // 1 byte for each char
+  var bufView = new Uint8Array(buf);
+  for (var i=0, strLen=str.length; i<strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
+
 class RemoteRequest {
   url: string;
   chunks: Array<Chunk>;  // regions of file that have already been loaded.
@@ -19,7 +35,8 @@ class RemoteRequest {
   }
 
   get(contig: string, start: number, stop: number): Q.Promise<ArrayBuffer> {
-    if (stop - start <= 0) {
+    var length = stop - start;
+    if (length <= 0) {
       return Q.reject(`Requested <0 bytes (${length}) from ${this.url}`);
     }
 
@@ -47,22 +64,27 @@ class RemoteRequest {
      * Request must be of form "url/contig?start=start&end=stop"
     */
   getFromNetwork(contig: string, start: number, stop: number): Q.Promise<ArrayBuffer> {
+    var length = stop - start;
     if (length > 50000000) {
       throw `Monster request: Won't fetch ${length} bytes from ${this.url}`;
     }
 
-    var request = this.url + "/" + contig +"?start=" + start + "&end=" + stop;
-
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', request);
-    xhr.responseType = 'arraybuffer';
+    xhr.open('GET', this.url);
+    xhr.responseType = 'json';
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader('contig', `${contig}`);
+    xhr.setRequestHeader('start', `start=${start}`);
+    xhr.setRequestHeader('end', `end=${stop}`);
 
-    return this.promiseXHR(xhr).then(([buffer]) => {
+    return this.promiseXHR(xhr).then(json => {
+      // extract response from promise
+      var response = json[0];
+      var buffer = stringToBuffer(response);
       // The actual length of the response may be less than requested if it's
       // too short, e.g. if we request bytes 0-1000 of a 500-byte file.
-      var newChunk = { start, stop: start + buffer.byteLength - 1, buffer };
+      var newChunk = { start, stop, buffer};
       this.chunks.push(newChunk);
-
       return buffer;
     });
   }
