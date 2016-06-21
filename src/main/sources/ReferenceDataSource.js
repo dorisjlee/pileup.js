@@ -46,7 +46,7 @@ function expandRange(range) {
 
 var createFromReferenceUrl = function(remoteSource: Sequence): TwoBitSource {
   // Local cache of genomic data.
-  var contigList = [];
+  var contigList = remoteSource.getContigList();
   var store = new SequenceStore();
 
   // Ranges for which we have complete information -- no need to hit network.
@@ -58,7 +58,6 @@ var createFromReferenceUrl = function(remoteSource: Sequence): TwoBitSource {
       return Q.when();  // empty promise
     }
 
-    console.log(`Fetching ${span} base pairs`);
     // TODO remote Source
     remoteSource.getFeaturesInRange(range.contig, range.start(), range.stop())
       .then(letters => {
@@ -102,14 +101,6 @@ var createFromReferenceUrl = function(remoteSource: Sequence): TwoBitSource {
     return store.getAsString(ContigInterval.fromGenomeRange(range));
   }
 
-  // Fetch the contig list immediately.
-  var contigPromise = remoteSource.getContigList().then(c => {
-    contigList = c;
-    o.trigger('contigs', contigList);
-    return c;
-  });
-  contigPromise.done();
-
   var o = {
     // The range here is 0-based, inclusive
     rangeChanged: function(newRange: GenomeRange) {
@@ -127,8 +118,7 @@ var createFromReferenceUrl = function(remoteSource: Sequence): TwoBitSource {
         coveredRanges = ContigInterval.coalesce(coveredRanges);
 
         for (var newRange of newRanges) {
-          var interval = new ContigInterval(newRange.contig, newRange.start, newRange.stop);
-          fetch(interval);
+          fetch(newRange);
         }
     },
     // The ranges passed to these methods are 0-based
@@ -144,7 +134,6 @@ var createFromReferenceUrl = function(remoteSource: Sequence): TwoBitSource {
     trigger: () => {}
   };
   _.extend(o, Events);  // Make this an event emitter
-
   return o;
 };
 
@@ -163,7 +152,18 @@ function create(data: {url:string, contigList: SequenceRecord[]}): TwoBitSource 
   return createFromReferenceUrl(new Sequence(new RemoteRequest(urlPrefix), contigList));
 }
 
+// Getter/setter for base pairs per fetch.
+// This should only be used for testing.
+function testBasePairsToFetch(num?: number): any {
+  if (num) {
+    BASE_PAIRS_PER_FETCH = num;
+  } else {
+    return BASE_PAIRS_PER_FETCH;
+  }
+}
+
 module.exports = {
   create,
-  createFromReferenceUrl
+  createFromReferenceUrl,
+  testBasePairsToFetch
 };
