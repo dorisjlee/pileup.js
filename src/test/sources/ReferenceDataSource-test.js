@@ -1,4 +1,4 @@
-/** @flow */
+  /** @flow */
 'use strict';
 
 import {expect} from 'chai';
@@ -7,8 +7,6 @@ import sinon from 'sinon';
 
 import ReferenceDataSource from '../../main/sources/ReferenceDataSource';
 import RemoteFile from '../../main/RemoteFile';
-import RemoteRequest from '../../main/RemoteRequest';
-import Sequence from '../../main/data/Sequence';
 
 describe('ReferenceDataSource', function() {
   var server: any = null, response;
@@ -43,6 +41,14 @@ describe('ReferenceDataSource', function() {
     var source = getTestSource();
     var contigs = source.contigList();
     expect(contigs).to.deep.equal(['chrM','22']);
+  });
+
+  it('should normalize range', function() {
+    var source = getTestSource();
+    var range = {contig: 'chrM', start: 0, stop: 3};
+    source.normalizeRange(range).then(normalized => {
+      expect(normalized.to.deep.equal(range));
+    }).done();
   });
 
   it('should fetch base pairs', function(done) {

@@ -75,19 +75,19 @@ var createFromReferenceUrl = function(remoteSource: Sequence): TwoBitSource {
   }
 
   // This either adds or removes a 'chr' as needed.
-  function normalizeRange(range: GenomeRange): GenomeRange {
+  function normalizeRange(range: GenomeRange): Q.Promise<GenomeRange> {
     if (contigList.indexOf(range.contig) >= 0) {
-      return range;
+      return Q.Promise.resolve(range);
     }
     var altContig = utils.altContigName(range.contig);
     if (contigList.indexOf(altContig) >= 0) {
-      return {
+      return Q.Promise.resolve({
         contig: altContig,
         start: range.start,
         stop: range.stop
-      };
+      });
     }
-    return range;  // let it fail with the original contig
+    return Q.Promise.resolve(range);  // cast as promise to conform to TwoBitDataSource
   }
 
   // Returns a {"chr12:123" -> "[ATCG]"} mapping for the range.
@@ -104,9 +104,8 @@ var createFromReferenceUrl = function(remoteSource: Sequence): TwoBitSource {
   var o = {
     // The range here is 0-based, inclusive
     rangeChanged: function(newRange: GenomeRange) {
-        var r = normalizeRange(newRange);
+      normalizeRange(newRange).then(r => {
         var range = new ContigInterval(r.contig, r.start, r.stop);
-
         // Check if this interval is already in the cache.
         if (range.isCoveredBy(coveredRanges)) {
           return;
@@ -120,6 +119,7 @@ var createFromReferenceUrl = function(remoteSource: Sequence): TwoBitSource {
         for (var newRange of newRanges) {
           fetch(newRange);
         }
+      }).done();
     },
     // The ranges passed to these methods are 0-based
     getRange,

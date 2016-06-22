@@ -70,12 +70,10 @@ class RemoteRequest {
     }
 
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', this.url);
+    var endpoint = this.url + "/" + contig + "?start=" + start + "&end=" + stop;
+    xhr.open('GET', endpoint);
     xhr.responseType = 'json';
     xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.setRequestHeader('contig', `${contig}`);
-    xhr.setRequestHeader('start', `start=${start}`);
-    xhr.setRequestHeader('end', `end=${stop}`);
 
     return this.promiseXHR(xhr).then(json => {
       // extract response from promise
