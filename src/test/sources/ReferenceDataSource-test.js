@@ -67,7 +67,6 @@ describe('ReferenceDataSource', function() {
      expect(source.getRangeAsString(range)).to.equal('....');
 
     source.on('newdata', () => {
-      console.log(source.getRange(range));
       expect(source.getRange(range)).to.deep.equal({
        'chrM:0': 'N',
        'chrM:1': 'G',

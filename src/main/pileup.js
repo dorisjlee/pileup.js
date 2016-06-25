@@ -15,6 +15,7 @@ import TwoBitDataSource from './sources/TwoBitDataSource';
 import ReferenceDataSource from './sources/ReferenceDataSource';
 import BigBedDataSource from './sources/BigBedDataSource';
 import VcfDataSource from './sources/VcfDataSource';
+import VariantDataSource from './sources/VariantDataSource';
 import BamDataSource from './sources/BamDataSource';
 import GA4GHDataSource from './sources/GA4GHDataSource';
 import EmptySource from './sources/EmptySource';
@@ -124,6 +125,7 @@ var pileup = {
     bam: BamDataSource.create,
     ga4gh: GA4GHDataSource.create,
     vcf: VcfDataSource.create,
+    variants: VariantDataSource.create,
     twoBit: TwoBitDataSource.create,
     reference: ReferenceDataSource.create,
     bigBed: BigBedDataSource.create,
