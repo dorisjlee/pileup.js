@@ -15,7 +15,9 @@ describe('ReferenceDataSource', function() {
     return new RemoteFile('/test-data/reference-chrM-0-1000.json').getAllString().then(data => {
       response = data;
       server = sinon.fakeServer.create();
-      server.respondWith('GET', '/reference',[200, { "Content-Type": "application/json" }, response]);
+      server.respondWith('GET', '/reference/chrM?start=0&end=10000',[200, { "Content-Type": "application/json" }, response]);
+      server.respondWith('GET', '/reference/chrM?start=0&end=10',[200, { "Content-Type": "application/json" }, response]);
+      server.respondWith('GET', '/reference/22?start=0&end=10000',[200, { "Content-Type": "application/json" }, response]);
     });
   });
 
@@ -65,6 +67,7 @@ describe('ReferenceDataSource', function() {
      expect(source.getRangeAsString(range)).to.equal('....');
 
     source.on('newdata', () => {
+      console.log(source.getRange(range));
       expect(source.getRange(range)).to.deep.equal({
        'chrM:0': 'N',
        'chrM:1': 'G',
