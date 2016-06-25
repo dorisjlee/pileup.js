@@ -10,18 +10,18 @@ import Q from 'q';
 type Chunk = {
   start: number;
   stop: number;
-  buffer: ArrayBuffer; // TODO: generalize to Any
+  buffer: Object; // TODO: generalize to Any
 }
 
-// Define transition from json to object in
-function stringToBuffer(str: string): ArrayBuffer {
-  var buf = new ArrayBuffer(str.length); // 1 byte for each char
-  var bufView = new Uint8Array(buf);
-  for (var i=0, strLen=str.length; i<strLen; i++) {
-    bufView[i] = str.charCodeAt(i);
-  }
-  return buf;
-}
+// // Define transition from string json to array buffer
+// function stringToBuffer(str: string): ArrayBuffer {
+//   var buf = new ArrayBuffer(str.length); // 1 byte for each char
+//   var bufView = new Uint8Array(buf);
+//   for (var i=0, strLen=str.length; i<strLen; i++) {
+//     bufView[i] = str.charCodeAt(i);
+//   }
+//   return buf;
+// }
 
 class RemoteRequest {
   url: string;
@@ -34,7 +34,7 @@ class RemoteRequest {
     this.numNetworkRequests = 0;
   }
 
-  get(contig: string, start: number, stop: number): Q.Promise<ArrayBuffer> {
+  get(contig: string, start: number, stop: number): Q.Promise<Object> {
     var length = stop - start;
     if (length <= 0) {
       return Q.reject(`Requested <0 bytes (${length}) from ${this.url}`);
@@ -50,7 +50,7 @@ class RemoteRequest {
     return this.getFromNetwork(contig, start, stop);
   }
 
-  getFromCache(start: number, stop: number): ?ArrayBuffer {
+  getFromCache(start: number, stop: number): ?Object {
     for (var i = 0; i < this.chunks.length; i++) {
       var chunk = this.chunks[i];
       if (chunk.start <= start && chunk.stop >= stop) {
@@ -63,7 +63,7 @@ class RemoteRequest {
     /**
      * Request must be of form "url/contig?start=start&end=stop"
     */
-  getFromNetwork(contig: string, start: number, stop: number): Q.Promise<ArrayBuffer> {
+  getFromNetwork(contig: string, start: number, stop: number): Q.Promise<Object> {
     var length = stop - start;
     if (length > 50000000) {
       throw `Monster request: Won't fetch ${length} bytes from ${this.url}`;
@@ -77,13 +77,15 @@ class RemoteRequest {
 
     return this.promiseXHR(xhr).then(json => {
       // extract response from promise
-      var response = json[0];
-      var buffer = stringToBuffer(response);
+      var response = json[0]; // TODO: don't store in object
+
+      // var buffer = stringToBuffer(response);
+
       // The actual length of the response may be less than requested if it's
       // too short, e.g. if we request bytes 0-1000 of a 500-byte file.
-      var newChunk = { start, stop, buffer};
+      var newChunk = { start, stop, response};
       this.chunks.push(newChunk);
-      return buffer;
+      return response;
     });
   }
 
