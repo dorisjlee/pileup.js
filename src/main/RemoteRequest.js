@@ -71,6 +71,7 @@ class RemoteRequest {
 
     var xhr = new XMLHttpRequest();
     var endpoint = this.url + "/" + contig + "?start=" + start + "&end=" + stop;
+    console.log("endpoint", endpoint);
     xhr.open('GET', endpoint);
     xhr.responseType = 'json';
     xhr.setRequestHeader('Content-Type', 'application/json');
