@@ -28,9 +28,10 @@ class RemoteRequest {
   chunks: Array<Chunk>;  // regions of file that have already been loaded.
   numNetworkRequests: number;  // track this for debugging/testing
 
-  constructor(url: string) {
+  constructor(url: string, key: string) {
     this.url = url;
     this.chunks = [];
+    this.key = key;
     this.numNetworkRequests = 0;
   }
 
@@ -70,7 +71,7 @@ class RemoteRequest {
     }
 
     var xhr = new XMLHttpRequest();
-    var endpoint = this.url + "/" + contig + "?start=" + start + "&end=" + stop;
+    var endpoint = this.url + "/" + contig + "?start=" + start + "&end=" + stop + "&key=" + this.key;
     console.log("endpoint", endpoint);
     xhr.open('GET', endpoint);
     xhr.responseType = 'json';
