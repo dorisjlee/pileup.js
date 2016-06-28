@@ -1,4 +1,4 @@
-/** @flow */
+  /** @flow */
 'use strict';
 
 import {expect} from 'chai';
@@ -146,5 +146,6 @@ it('should only report newly-fetched ranges', function(done) {
   source.rangeChanged(initRange);
   server.respond();
 });
+
 
 });

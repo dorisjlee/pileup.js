@@ -4,7 +4,7 @@
  * @flow
  */
 
-"use strict";
+'use strict';
 
 class Interval {
   start: number;

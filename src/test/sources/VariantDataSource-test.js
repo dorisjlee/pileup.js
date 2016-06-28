@@ -17,7 +17,6 @@ describe('VariantDataSource', function() {
     return new RemoteFile('/test-data/variants-chrM-0-100.json').getAllString().then(data => {
       response = data;
       server = sinon.fakeServer.create();
-      // server.respondWith('GET', '/variants',[200, { "Content-Type": "application/json" }, response]);
       server.respondWith('GET', '/variants/chrM?start=1&end=1000&key=test',[200, { "Content-Type": "application/json" }, response]);
     });
   });
