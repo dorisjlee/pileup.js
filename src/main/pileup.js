@@ -20,11 +20,12 @@ import GenotypeDataSource from './sources/GenotypeDataSource';
 import BamDataSource from './sources/BamDataSource';
 import GA4GHDataSource from './sources/GA4GHDataSource';
 import EmptySource from './sources/EmptySource';
+import FeatureDataSource from './sources/FeatureDataSource';
 
 // Visualizations
 import CoverageTrack from './viz/CoverageTrack';
 import GenomeTrack from './viz/GenomeTrack';
-import GeneTrack from './viz/GeneTrack';
+import GeneTrack from './viz/GeneTrack'; //use this for features
 import LocationTrack from './viz/LocationTrack';
 import PileupTrack from './viz/PileupTrack';
 import ScaleTrack from './viz/ScaleTrack';
