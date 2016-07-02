@@ -13,17 +13,6 @@ type Chunk = {
   buffer: Object; // TODO: generalize to Any
 }
 
-// // Define transition from string json to array buffer
-// function stringToBuffer(str: string): ArrayBuffer {
-//   var buf = new ArrayBuffer(str.length); // 1 byte for each char
-//   var bufView = new Uint8Array(buf);
-//   for (var i=0, strLen=str.length; i<strLen; i++) {
-//     bufView[i] = str.charCodeAt(i);
-//   }
-//   return buf;
-// }
-
-
 class RemoteRequest {
   url: string;
   chunks: Array<Chunk>;  // regions of file that have already been loaded.
@@ -70,7 +59,6 @@ class RemoteRequest {
     if (length > 50000000) {
       throw `Monster request: Won't fetch ${length} bytes from ${this.url}`;
     }
-
     var xhr = new XMLHttpRequest();
     var endpoint = this.url + "/" + contig + "?start=" + start + "&end=" + stop + "&key=" + this.key;
     xhr.open('GET', endpoint);
