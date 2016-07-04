@@ -50,6 +50,10 @@ class Root extends React.Component {
   }
 
   handleRangeChange(newRange: GenomeRange) {
+    // Do not propigate negative ranges
+    if (newRange.start < 0) {
+      return;
+    }
     this.props.referenceSource.normalizeRange(newRange).then(range => {
       this.setState({range: range});
 
