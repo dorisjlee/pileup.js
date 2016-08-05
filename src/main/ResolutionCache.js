@@ -1,5 +1,5 @@
 /**
- * Cache for any Data Sources that rely on resolution. For example,
+ * Cache for any Data Sources that rely on resolution of region size. For example,
  * this is used by coverage to keep track of the difference resolutions
  * that have been fetched already.
  *
