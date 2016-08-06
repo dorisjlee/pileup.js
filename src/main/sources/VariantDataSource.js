@@ -58,7 +58,7 @@ function createFromVariantUrl(remoteSource: VariantEndpoint): VcfDataSource {
     }
   }
 
-  function fetch(range: GenomeRange) {
+  function fetch(range: GenomeRange,modifier:string="") {
     var interval = new ContigInterval(range.contig, range.start, range.stop);
 
     // Check if this interval is already in the cache.
@@ -71,7 +71,7 @@ function createFromVariantUrl(remoteSource: VariantEndpoint): VcfDataSource {
     // "Cover" the range immediately to prevent duplicate fetches.
     coveredRanges.push(interval);
     coveredRanges = ContigInterval.coalesce(coveredRanges);
-    return remoteSource.getFeaturesInRange(interval).then(variants => {
+    return remoteSource.getFeaturesInRange(interval,modifier).then(variants => {
       variants.forEach(variant => addVariant(variant));
       o.trigger('newdata', interval);
     });
@@ -85,6 +85,9 @@ function createFromVariantUrl(remoteSource: VariantEndpoint): VcfDataSource {
   var o = {
     rangeChanged: function(newRange: GenomeRange) {
       fetch(newRange).done();
+    },
+    filterChanged: function(newRange: GenomeRange) {
+      fetch(newRange,modifier).done();
     },
     getFeaturesInRange,
 
