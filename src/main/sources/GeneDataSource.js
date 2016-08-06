@@ -83,18 +83,13 @@ function createFromGeneUrl(remoteSource: GeneEndpoint): BigBedSource {
   return o;
 }
 
-function create(data: {url?:string, key?:string}): BigBedSource {
+function create(data: {url?:string}): BigBedSource {
   var url = data.url;
-  var key = data.key;
   if (!url) {
     throw new Error(`Missing URL from track: ${JSON.stringify(data)}`);
   }
-  // verify key was correctly set
-  if (!key) {
-    throw new Error(`Missing key from track: ${JSON.stringify(data)}`);
-  }
 
-  var request = new RemoteRequest(url, key);
+  var request = new RemoteRequest(url, BASE_PAIRS_PER_FETCH);
   var endpoint = new GeneEndpoint(request);
   return createFromGeneUrl(endpoint);
 }

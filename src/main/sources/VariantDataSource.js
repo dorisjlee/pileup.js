@@ -94,16 +94,11 @@ function createFromVariantUrl(remoteSource: VariantEndpoint): VcfDataSource {
   return o;
 }
 
-function create(data: {url?:string, key?:string}): VcfDataSource {
-  var {url, key} = data;
-  if (!url) {
+function create(data: {url?:string}): VcfDataSource {
+  if (!data.url) {
     throw new Error(`Missing URL from track: ${JSON.stringify(data)}`);
   }
-  // verify key was correctly set
-  if (!key) {
-    throw new Error(`Missing key from track: ${JSON.stringify(data)}`);
-  }
-  var request = new RemoteRequest(url, key);
+  var request = new RemoteRequest(data.url, BASE_PAIRS_PER_FETCH);
   var endpoint = new VariantEndpoint(request);
   return createFromVariantUrl(endpoint);
 }

@@ -5,10 +5,11 @@
  */
 'use strict';
 
-// import Q from 'q';
+import Q from 'q';
 import type RemoteRequest from '../RemoteRequest';
 import Interval from '../Interval';
-import ContigInterval from '../../main/ContigInterval';
+import ContigInterval from '../ContigInterval';
+import type {Gene} from '../sources/BigBedDataSource';
 
 function extractGenes(genes: Object): Gene[] {
   var mapped = genes.map(g => extractGene(g));
@@ -48,11 +49,8 @@ class GeneEndpoint {
   }
 
   getGenesInRange(range: ContigInterval<string>): Q.Promise<Gene[]> {
-     var contig = range.contig;
-     var start = range.interval.start;
-     var stop = range.interval.stop;
 
-    return this.remoteRequest.get(contig, start, stop).then(object => {
+    return this.remoteRequest.get(range).then(object => {
       var d = extractGenes(object);
       return d;
     });

@@ -31,7 +31,7 @@ import utils from '../utils';
 // Requests for 2bit ranges are expanded to begin & end at multiples of this
 // constant. Doing this means that panning typically won't require
 // additional network requests.
-var BASE_PAIRS_PER_FETCH = 15000;
+var BASE_PAIRS_PER_FETCH = 10000;
 
 var MAX_BASE_PAIRS_TO_FETCH = 100000;
 
@@ -59,7 +59,7 @@ var createFromReferenceUrl = function(remoteSource: Sequence): TwoBitSource {
     }
 
     // TODO remote Source
-    remoteSource.getFeaturesInRange(range.contig, range.start(), range.stop())
+    remoteSource.getFeaturesInRange(range)
       .then(letters => {
         if (!letters) return;
         if (letters.length < range.length()) {
@@ -87,7 +87,7 @@ var createFromReferenceUrl = function(remoteSource: Sequence): TwoBitSource {
         stop: range.stop
       });
     }
-    return Q.Promise.resolve(range);  // cast as promise to conform to TwoBitDataSource
+    return Q.Promise.resolve(range);
   }
 
   // Returns a {"chr12:123" -> "[ATCG]"} mapping for the range.
@@ -149,8 +149,7 @@ function create(data: {url:string, contigList: SequenceRecord[]}): TwoBitSource 
   if (!contigList) {
     throw new Error(`Missing ContigList from track: ${JSON.stringify(data)}`);
   }
-  var key = "reference"; // key is not required for reference but required for Remote Request
-  return createFromReferenceUrl(new Sequence(new RemoteRequest(urlPrefix, key), contigList));
+  return createFromReferenceUrl(new Sequence(new RemoteRequest(urlPrefix, BASE_PAIRS_PER_FETCH), contigList));
 }
 
 // Getter/setter for base pairs per fetch.

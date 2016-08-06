@@ -6,7 +6,7 @@ import {expect} from 'chai';
 
 import sinon from 'sinon';
 
-import VariantDataSource from '../../main/sources/VariantDataSource';
+import GenotypeDataSource from '../../main/sources/GenotypeDataSource';
 import ContigInterval from '../../main/ContigInterval';
 import RemoteFile from '../../main/RemoteFile';
 
@@ -17,7 +17,7 @@ describe('GenotypeDataSource', function() {
     return new RemoteFile('/test-data/genotypes-chrM-0-100.json').getAllString().then(data => {
       response = data;
       server = sinon.fakeServer.create();
-      server.respondWith('GET', '/genotypes/chrM?start=1&end=1000&key=test',[200, { "Content-Type": "application/json" }, response]);
+      server.respondWith('GET', '/genotypes/chrM?start=1&end=1000',[200, { "Content-Type": "application/json" }, response]);
     });
   });
 
@@ -26,15 +26,14 @@ describe('GenotypeDataSource', function() {
   });
 
   function getTestSource() {
-    var source = VariantDataSource.create({
-      url: '/genotypes',
-      key: 'test'
+    var source = GenotypeDataSource.create({
+      url: '/genotypes'
     });
     return source;
   }
   it('should extract features in a range', function(done) {
     var source = getTestSource();
-    var range = new ContigInterval('chrM', 0, 25);
+    var range = new ContigInterval('chrM', 0, 31);
     // No variants are cached yet.
     var variants = source.getFeaturesInRange(range);
     expect(variants).to.deep.equal([]);

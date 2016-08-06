@@ -22,7 +22,9 @@ import {Events} from 'backbone';
 import ContigInterval from '../ContigInterval';
 import RemoteRequest from '../RemoteRequest';
 import FeatureEndpoint from '../data/FeatureEndpoint';
-import type {Feature} from '../data/FeatureEndPoint';
+import type {Feature} from '../data/FeatureEndpoint';
+
+BASE_PAIRS_PER_FETCH = 5000;
 
 // Flow type for export.
 export type FeatureDataSource = {
@@ -106,16 +108,13 @@ function createFromFeatureUrl(remoteSource: FeatureEndpoint): FeatureDataSource 
   return o;
 }
 
-function create(data: {url?:string, key?:string}): FeatureDataSource {
-  var {url, key} = data;
+function create(data: {url?:string}): FeatureDataSource {
+  var {url} = data;
   if (!url) {
     throw new Error(`Missing URL from track: ${JSON.stringify(data)}`);
   }
-  // verify key was correctly set
-  if (!key) {
-    throw new Error(`Missing key from track: ${JSON.stringify(data)}`);
-  }
-  var request = new RemoteRequest(url, key);
+
+  var request = new RemoteRequest(url, BASE_PAIRS_PER_FETCH);
   var endpoint = new FeatureEndpoint(request);
   return createFromFeatureUrl(endpoint);
 }

@@ -6,11 +6,9 @@
 'use strict';
 
 import Q from 'q';
+import ContigInterval from '../ContigInterval';
 import type RemoteRequest from '../RemoteRequest';
-
-function extractVariants(variants: Object): Variant[] {
-  return variants;
-}
+import type {Variant} from './vcf';
 
 class VariantEndpoint {
   remoteRequest: RemoteRequest;
@@ -20,13 +18,9 @@ class VariantEndpoint {
   }
 
   getFeaturesInRange(range: ContigInterval<string>): Q.Promise<Variant[]> {
-     var contig = range.contig;
-     var start = range.interval.start;
-     var stop = range.interval.stop;
 
-
-    return this.remoteRequest.get(contig, start, stop).then(object => {
-      var d = extractVariants(object); // TODO: should parts to Variant[]
+    return this.remoteRequest.get(range).then(object => {
+      var d: Variant[] = object;
       return d;
     });
   }
