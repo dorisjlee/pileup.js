@@ -49,12 +49,7 @@ class Root extends React.Component {
     // in case the contigs came in between getInitialState() and here.
     this.setState({contigList: this.props.referenceSource.contigList()});
   }
-  handleFilterChange(filters: Array){
-    console.output(this.props);
-    if (this.props.referenceSource==VcfDataSource){
-      this.setState(filters);  
-    }
-  }
+  
   handleRangeChange(newRange: GenomeRange) {
     // Do not propigate negative ranges
     if (newRange.start < 0) {

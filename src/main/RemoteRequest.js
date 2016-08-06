@@ -61,8 +61,8 @@ class RemoteRequest {
       throw `Monster request: Won't fetch ${length} bytes from ${this.url}`;
     }
     var xhr = new XMLHttpRequest();
-    var endpoint = ""
-    if (modifier.length > 0){
+    var endpoint = "";
+    if (modifier.length > 0) {
       endpoint = this.url + "/" + contig + "?start=" + start + "&end=" + stop + "&" + modifier;
     }
     else {

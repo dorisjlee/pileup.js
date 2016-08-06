@@ -18,7 +18,7 @@
 
 import React from 'react';
 
-type MenuItem = {
+export type MenuItem = {
   key: string;
   label: string;
   checked?: boolean;
