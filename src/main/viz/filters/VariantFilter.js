@@ -28,6 +28,16 @@ class VariantFilter extends React.Component {
 
   constructor(props: Object) {
     super(props);
+    this.props.transEffects= [
+	    {key: "3P", label: '3 Prime UTR', checked: false},
+	    {key: "Intr", label: 'Intron', checked: false},
+	 	{key: "5P", label: '5 Prime UTR', checked: false},
+	 	{key: "Mis", label: 'Missense', checked: false},
+	 	{key: "Cod", label: 'Coding', checked: false},
+	 	{key: "Up", label: 'Upstream', checked: false},
+	 	{key: "Down", label: 'Downstream', checked: false},
+	 	{key: "Splice", label: 'Splice', checked: false}
+ 	];
   }
 
 
@@ -46,16 +56,10 @@ class VariantFilter extends React.Component {
   }
 
   transEffButtonClick(item:string){
-    this.props.transEffects.value.push({
-			  key: item.key,
-			  label: item.label,
-			  checked: true
-	}); 
+    this.props.transEffects.value[item.key].checked = true;
   }
 
   render(): any {
-    // var effectKeys = ["3P", "Intr","5P","Mis","Cod","Up","Down","Splice"];
-    // var effectLabels = ["3 Prime UTR", "Intron","5 Prime UTR","Missense","Coding","Upstream","Downstream","Splice"];
     var elems = [];
 
     var res = this.props.transEffects.map((item,i)=>{
