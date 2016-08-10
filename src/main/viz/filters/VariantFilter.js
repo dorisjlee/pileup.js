@@ -69,7 +69,7 @@ class VariantFilter extends React.Component {
     var elems = [];
 
     var res = this.props.filters.transEffects.map((item, i)=>{
-    	return <button ref="transEff" class ="transEff" type="button" id={item.key} onClick = {this.transEffButtonClick.bind(i)}>{item.label}</button>;
+    	return <input ref="transEff" class ="transEff" type="checkbox" id={item.key} onClick = {this.transEffButtonClick.bind(i)}>{item.label}</input>;
     });
 
     elems.push(<div><h4>Transcript Effect</h4>{res}</div>);
