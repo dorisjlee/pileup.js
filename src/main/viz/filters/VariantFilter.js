@@ -8,15 +8,37 @@ import type {MenuItem} from '../../Menu';
 import React from 'react';
 
 type Props = {
-  filters: VarFilter;
-  onChange: (filter: VarFilter) => void;
+  filters: VcfFilter;
+  onChange: (filter: VcfFilter) => void;
 };
 
-type VarFilter = {
+export type VcfFilter = {
   transEffects: Array<MenuItem>;
-  readDepth: Number;
-  alleleCount: Number;
-  alleleFreq: Number ;
+  readDepth: number;
+  alleleCount: number;
+  alleleFreq: number;
+}
+
+function initVariantFilters(): VcfFilter {
+  var transEffects = [
+    {key: "3P", label: '3 Prime UTR', checked: false},
+    {key: "Intr", label: 'Intron', checked: false},
+    {key: "5P", label: '5 Prime UTR', checked: false},
+    {key: "Mis", label: 'Missense', checked: false},
+    {key: "Cod", label: 'Coding', checked: false},
+    {key: "Up", label: 'Upstream', checked: false},
+    {key: "Down", label: 'Downstream', checked: false},
+    {key: "Splice", label: 'Splice', checked: false}
+  ];
+  var readDepth = 0, alleleCount = 0, alleleFreq = 0;
+
+  return {
+    transEffects: transEffects,
+    readDepth: readDepth,
+    alleleCount: alleleCount,
+    alleleFreq: alleleFreq
+  };
+
 }
 
 class VariantFilter extends React.Component {
@@ -25,16 +47,6 @@ class VariantFilter extends React.Component {
 
   constructor(props: Object) {
     super(props);
-    this.props.filters.transEffects = [
-	    {key: "3P", label: '3 Prime UTR', checked: false},
-	    {key: "Intr", label: 'Intron', checked: false},
-  	 	{key: "5P", label: '5 Prime UTR', checked: false},
-  	 	{key: "Mis", label: 'Missense', checked: false},
-  	 	{key: "Cod", label: 'Coding', checked: false},
-  	 	{key: "Up", label: 'Upstream', checked: false},
-  	 	{key: "Down", label: 'Downstream', checked: false},
-  	 	{key: "Splice", label: 'Splice', checked: false}
- 	  ];
   }
 
   handleFilterSubmit(e: SyntheticEvent) {
@@ -83,7 +95,7 @@ class VariantFilter extends React.Component {
     elems.push(<button style="float:right" id = "submit"
     			onClick={this.handleFilterSubmit.bind(this)}>Submit</button>);
     return (
-      <form className='varFilter' onSubmit={this.handleFilterSubmit.bind(this)}>
+      <form className='vcfFilter' onSubmit={this.handleFilterSubmit.bind(this)}>
         elems
       </form>
     );
@@ -92,4 +104,7 @@ class VariantFilter extends React.Component {
 
 }
 
-module.exports = VariantFilter;
+module.exports = {
+  initVariantFilters,
+  VariantFilter
+};

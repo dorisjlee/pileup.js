@@ -15,9 +15,11 @@ import ContigInterval from '../ContigInterval';
 import RemoteFile from '../RemoteFile';
 import LocalStringFile from '../LocalStringFile';
 import VcfFile from '../data/vcf';
+import type VcfFilter from '../viz/filters/VcfFilter';
 
 export type VcfDataSource = {
   rangeChanged: (newRange: GenomeRange) => void;
+  filterChanged: (filters: VcfFilter) => void;
   getFeaturesInRange: (range: ContigInterval<string>) => Variant[];
   on: (event: string, handler: Function) => void;
   off: (event: string) => void;
@@ -80,6 +82,7 @@ function createFromVcfFile(remoteSource: VcfFile): VcfDataSource {
     rangeChanged: function(newRange: GenomeRange) {
       fetch(newRange).done();
     },
+    filterChanged: function(vcfFilter: VcfFilter) {},
     getFeaturesInRange,
 
     // These are here to make Flow happy.
