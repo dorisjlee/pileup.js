@@ -86,8 +86,8 @@ function createFromVariantUrl(remoteSource: VariantEndpoint): VcfDataSource {
     rangeChanged: function(newRange: GenomeRange) {
       fetch(newRange).done();
     },
-    filterChanged: function(newRange: GenomeRange) {
-      fetch(newRange,modifier).done();
+    filterChanged: function(vcfFilter: VcfFilter) {
+      // TODO: trigger query
     },
     getFeaturesInRange,
 

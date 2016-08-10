@@ -9,7 +9,9 @@ import type {VisualizedTrack, VizWithOptions} from './types';
 
 import React from 'react';
 import Controls from './Controls';
+import VcfFilter from './viz/filters/VariantFilter';
 import Menu from './Menu';
+import VariantFilter from './viz/filters/VariantFilter';
 import VisualizationWrapper from './VisualizationWrapper';
 
 type Props = {
@@ -31,6 +33,7 @@ class Root extends React.Component {
     super(props);
     this.state = {
       contigList: this.props.referenceSource.contigList(),
+      // todo: set filters here
       range: null,
       settingsMenuKey: null
     };
@@ -49,7 +52,7 @@ class Root extends React.Component {
     // in case the contigs came in between getInitialState() and here.
     this.setState({contigList: this.props.referenceSource.contigList()});
   }
-  
+
   handleRangeChange(newRange: GenomeRange) {
     // Do not propigate negative ranges
     if (newRange.start < 0) {
@@ -63,6 +66,14 @@ class Root extends React.Component {
         track.source.rangeChanged(range);
       });
     }).done();
+  }
+
+  handleVariantFilterChange(vcfFilter: VcfFilter) {
+    // Inform all the vcf sources of the filter change
+    // TODO: filter out non variant tracks
+    this.props.tracks.forEach(track => {
+      track.source.filterChanged();
+    });
   }
 
   toggleSettingsMenu(key: string, e: SyntheticEvent) {
@@ -158,6 +169,9 @@ class Root extends React.Component {
             <Controls contigList={this.state.contigList}
                       range={this.state.range}
                       onChange={this.handleRangeChange.bind(this)} />
+            // TODO: toggle based on some metric/ if there are variants
+            <VariantFilter filters=VariantFilter.initVariantFilters()
+                      onChange={this.handleVariantFilterChange.bind(this)} />
           </div>
         </div>
         {trackEls}
