@@ -16,9 +16,11 @@ import ReferenceDataSource from './sources/ReferenceDataSource';
 import BigBedDataSource from './sources/BigBedDataSource';
 import VcfDataSource from './sources/VcfDataSource';
 import VariantDataSource from './sources/VariantDataSource';
+import GeneDataSource from './sources/GeneDataSource';
 import GenotypeDataSource from './sources/GenotypeDataSource';
 import BamDataSource from './sources/BamDataSource';
 import GA4GHDataSource from './sources/GA4GHDataSource';
+import CoverageDataSource from './sources/CoverageDataSource';
 import EmptySource from './sources/EmptySource';
 import FeatureDataSource from './sources/FeatureDataSource';
 
@@ -26,7 +28,7 @@ import FeatureDataSource from './sources/FeatureDataSource';
 import CoverageTrack from './viz/CoverageTrack';
 import GenomeTrack from './viz/GenomeTrack';
 import GeneTrack from './viz/GeneTrack';
-import FeatureTrack from './viz/FeatureTrack'; 
+import FeatureTrack from './viz/FeatureTrack';
 import LocationTrack from './viz/LocationTrack';
 import PileupTrack from './viz/PileupTrack';
 import ScaleTrack from './viz/ScaleTrack';
@@ -53,6 +55,7 @@ type PileupParams = {
     stop: number
   };
   tracks: Track[];
+  filters?: ?string[];
 }
 
 function findReference(tracks: VisualizedTrack[]): ?VisualizedTrack {
@@ -77,6 +80,12 @@ function create(elOrId: string|Element, params: PileupParams): Pileup {
     return {visualization: track.viz, source, track};
   });
 
+
+  var filters = [];
+  if (params.filters)
+    filters = params.filters;
+
+
   var referenceTrack = findReference(vizTracks);
   if (!referenceTrack) {
     throw new Error('You must include at least one track with type=reference');
@@ -85,7 +94,8 @@ function create(elOrId: string|Element, params: PileupParams): Pileup {
   var reactElement =
       ReactDOM.render(<Root referenceSource={referenceTrack.source}
                             tracks={vizTracks}
-                            initialRange={params.range} />, el);
+                            initialRange={params.range}
+                            filters={filters}/>, el);
   return {
     setRange(range: GenomeRange) {
       if (reactElement === null) {
@@ -135,6 +145,8 @@ var pileup = {
     twoBit: TwoBitDataSource.create,
     reference: ReferenceDataSource.create,
     bigBed: BigBedDataSource.create,
+    genes: GeneDataSource.create,
+    coverage: CoverageDataSource.create,
     empty: EmptySource.create
   },
   viz: {
@@ -148,7 +160,7 @@ var pileup = {
     genotypes: makeVizObject(GenotypeTrack),
     pileup:   makeVizObject(PileupTrack)
   },
-  version: '0.6.6'
+  version: '0.6.7'
 };
 
 module.exports = pileup;

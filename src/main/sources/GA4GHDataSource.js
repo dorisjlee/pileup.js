@@ -7,6 +7,7 @@
 
 import type {Alignment, AlignmentDataSource} from '../Alignment';
 
+import Q from 'q';
 import _ from 'underscore';
 import {Events} from 'backbone';
 

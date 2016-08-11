@@ -6,18 +6,14 @@
 'use strict';
 
 import Q from 'q';
+import ContigInterval from '../ContigInterval';
 import type RemoteRequest from '../RemoteRequest';
 import type {Variant} from './vcf';
 
 
 export type Genotype = {
-  sampleIds: string,
+  sampleIds: string[],
   variant: Variant
-}
-
-
-function extractGenotypes(genotypes: Object): Genotype[] {
-  return genotypes;
 }
 
 class GenotypeEndpoint {
@@ -28,13 +24,9 @@ class GenotypeEndpoint {
   }
 
   getFeaturesInRange(range: ContigInterval<string>): Q.Promise<Genotype[]> {
-     var contig = range.contig;
-     var start = range.interval.start;
-     var stop = range.interval.stop;
 
-
-    return this.remoteRequest.get(contig, start, stop).then(object => {
-      var d = extractGenotypes(object);
+    return this.remoteRequest.get(range).then(object => {
+      var d: Genotype[] = object;
       return d;
     });
   }

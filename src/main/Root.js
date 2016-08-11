@@ -9,15 +9,18 @@ import type {VisualizedTrack, VizWithOptions} from './types';
 
 import React from 'react';
 import Controls from './Controls';
-import VcfFilter from './viz/filters/VariantFilter';
-import Menu from './Menu';
+import type {VcfFilter} from './viz/filters/VariantFilter';
 import VariantFilter from './viz/filters/VariantFilter';
+import VariantTrack from './viz/VariantTrack';
+import Menu from './Menu';
+import filterUtils from './viz/filters/filterUtils';
 import VisualizationWrapper from './VisualizationWrapper';
 
 type Props = {
   referenceSource: TwoBitSource;
   tracks: VisualizedTrack[];
   initialRange: GenomeRange;
+  filters: string[];
 };
 
 class Root extends React.Component {
@@ -26,14 +29,12 @@ class Root extends React.Component {
     contigList: string[];
     range: ?GenomeRange;
     settingsMenuKey: ?string;
-    filters: ?Object;
   };
 
   constructor(props: Object) {
     super(props);
     this.state = {
       contigList: this.props.referenceSource.contigList(),
-      // todo: set filters here
       range: null,
       settingsMenuKey: null
     };
@@ -54,9 +55,9 @@ class Root extends React.Component {
   }
 
   handleRangeChange(newRange: GenomeRange) {
-    // Do not propigate negative ranges
+    // Do not propagate negative ranges
     if (newRange.start < 0) {
-      return;
+      newRange.start = 0;
     }
     this.props.referenceSource.normalizeRange(newRange).then(range => {
       this.setState({range: range});
@@ -69,9 +70,11 @@ class Root extends React.Component {
   }
 
   handleVariantFilterChange(vcfFilter: VcfFilter) {
-    // Inform all the vcf sources of the filter change
-    // TODO: filter out non variant tracks
-    this.props.tracks.forEach(track => {
+    // filter tracks
+    var filteredTracks =
+      this.props.tracks.filter(t => t.track.viz.component.displayName == VariantTrack.displayName);
+
+    filteredTracks.forEach(track => {
       track.source.filterChanged();
     });
   }
@@ -101,7 +104,6 @@ class Root extends React.Component {
         <VisualizationWrapper visualization={track.visualization}
             range={this.state.range}
             onRangeChange={this.handleRangeChange.bind(this)}
-            onFilterChange={this.handleFilterChange.bind(this)}
             source={track.source}
             referenceSource={this.props.referenceSource}
           />);
@@ -157,6 +159,13 @@ class Root extends React.Component {
   }
 
   render(): any {
+
+    // push filters that were specified
+    var filters = [];
+    if (this.props.filters.filter(f => f == VariantTrack.displayName).length > 0)
+      filters.push(<VariantFilter filters={filterUtils.initVariantFilters()}
+                            onChange={this.handleVariantFilterChange.bind(this)} />);
+
     // TODO: use a better key than index.
     var trackEls = this.props.tracks.map((t, i) => this.makeDivForTrack(''+i, t));
     return (
@@ -169,9 +178,7 @@ class Root extends React.Component {
             <Controls contigList={this.state.contigList}
                       range={this.state.range}
                       onChange={this.handleRangeChange.bind(this)} />
-            // TODO: toggle based on some metric/ if there are variants
-            <VariantFilter filters=VariantFilter.initVariantFilters()
-                      onChange={this.handleVariantFilterChange.bind(this)} />
+            {filters}
           </div>
         </div>
         {trackEls}

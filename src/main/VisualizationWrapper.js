@@ -25,7 +25,6 @@ type Props = {
   range: ?GenomeRange;
   visualization: VizWithOptions;
   onRangeChange: (newRange: GenomeRange) => void;
-  onFilterChange: (filter:Array) =>void;
   referenceSource: TwoBitSource;
   source: any;
 };
