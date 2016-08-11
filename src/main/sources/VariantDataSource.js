@@ -22,14 +22,12 @@ import _ from 'underscore';
 import {Events} from 'backbone';
 
 import ContigInterval from '../ContigInterval';
+import filterUtils from '../viz/filters/filterUtils';
 import type {VcfDataSource} from './VcfDataSource';
 import RemoteRequest from '../RemoteRequest';
 import VariantEndpoint from '../data/VariantEndpoint';
+import type {VcfFilter} from '../viz/filters/VariantFilter';
 
-
-// Requests for 2bit ranges are expanded to begin & end at multiples of this
-// constant. Doing this means that panning typically won't require
-// additional network requests.
 var BASE_PAIRS_PER_FETCH = 1000;
 
 function expandRange(range: ContigInterval<string>) {
@@ -48,6 +46,9 @@ function variantKey(v: Variant): string {
 function createFromVariantUrl(remoteSource: VariantEndpoint): VcfDataSource {
   var variants: {[key: string]: Variant} = {};
 
+  // stores filters
+  var vcfFilter: VcfFilter = filterUtils.initVariantFilters();
+
   // Ranges for which we have complete information -- no need to hit network.
   var coveredRanges: ContigInterval<string>[] = [];
 
@@ -58,8 +59,22 @@ function createFromVariantUrl(remoteSource: VariantEndpoint): VcfDataSource {
     }
   }
 
-  function fetch(range: GenomeRange,modifier:string="") {
+  function filterToString(): string {
+    // if filters are not specified to not update modifier
+    if (!filterUtils.isValidFilter(vcfFilter)) return "";
+
+    var transEffects = vcfFilter.transEffects.filter(t => t.checked === true);
+    transEffects.map(f => f.key).toString();
+
+    return (`transEffects=${transEffects.map(f => f.key).toString()}` +
+    `&readDepth=${vcfFilter.readDepth}` +
+    `&alleleCount=${vcfFilter.alleleCount}` +
+    `&alleleFreq=${vcfFilter.alleleFreq}`);
+  }
+
+  function fetch(range: GenomeRange) {
     var interval = new ContigInterval(range.contig, range.start, range.stop);
+    var modifier = filterToString();
 
     // Check if this interval is already in the cache.
     if (interval.isCoveredBy(coveredRanges)) {
@@ -86,8 +101,9 @@ function createFromVariantUrl(remoteSource: VariantEndpoint): VcfDataSource {
     rangeChanged: function(newRange: GenomeRange) {
       fetch(newRange).done();
     },
-    filterChanged: function(vcfFilter: VcfFilter) {
-      // TODO: trigger query
+    filterChanged: function(newRange: GenomeRange, filter: VcfFilter) {
+      vcfFilter = filter;
+      fetch(newRange).done();
     },
     getFeaturesInRange,
 
@@ -101,16 +117,11 @@ function createFromVariantUrl(remoteSource: VariantEndpoint): VcfDataSource {
   return o;
 }
 
-function create(data: {url?:string, key?:string}): VcfDataSource {
-  var {url, key} = data;
-  if (!url) {
+function create(data: {url?:string}): VcfDataSource {
+  if (!data.url) {
     throw new Error(`Missing URL from track: ${JSON.stringify(data)}`);
   }
-  // verify key was correctly set
-  if (!key) {
-    throw new Error(`Missing key from track: ${JSON.stringify(data)}`);
-  }
-  var request = new RemoteRequest(url, key);
+  var request = new RemoteRequest(data.url, BASE_PAIRS_PER_FETCH);
   var endpoint = new VariantEndpoint(request);
   return createFromVariantUrl(endpoint);
 }

@@ -1,6 +1,6 @@
 {
   "name": "pileup",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "description": "JavaScript track viewer",
   "keywords": [
     "genome",
@@ -27,6 +27,7 @@
     "watch": "./scripts/watch.sh",
     "lint": "./scripts/lint.sh",
     "http-server": "http-server .",
+    "test": "./scripts/test.sh",
     "flow": "flow status",
     "flow-check": "flow check",
     "coverage": "./scripts/generate-coverage.sh",
@@ -44,7 +45,7 @@
   "bugs": {
     "url": "https://github.com/hammerlab/pileup.js/issues"
   },
-  "homepage": "https://github.com/hammerlab/pileup.js", 
+  "homepage": "https://github.com/hammerlab/pileup.js",
   "dependencies": {
     "backbone": "1.1.2",
     "d3": "^3.5.5",

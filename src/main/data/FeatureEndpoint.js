@@ -1,23 +1,19 @@
 /**
- * This module defines a parser for the 2bit file format.
- * See http://genome.ucsc.edu/FAQ/FAQformat.html#format7
+ * This module defines a parser for features.
  * @flow
  */
 'use strict';
 
-// import Q from 'q';
+import Q from 'q';
+import ContigInterval from '../ContigInterval';
 import type RemoteRequest from '../RemoteRequest';
 
-type Feature = {
+export type Feature = {
   id: string;
   featureType: string;
   contig: string;
   start: number;
   stop: number;
-}
-
-function extractFeatures(features: Object): Feature[] {
-  return features;
 }
 
 class FeatureEndpoint {
@@ -28,12 +24,8 @@ class FeatureEndpoint {
   }
 
   getFeaturesInRange(range: ContigInterval<string>): Q.Promise<Feature[]> {
-     var contig = range.contig;
-     var start = range.interval.start;
-     var stop = range.interval.stop;
-
-    return this.remoteRequest.get(contig, start, stop).then(object => {
-      var d = extractFeatures(object);
+    return this.remoteRequest.get(range).then(object => {
+      var d: Feature[] = object;
       return d;
     });
   }

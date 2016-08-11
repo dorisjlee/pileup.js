@@ -1,90 +1,71 @@
 /**
- * RemoteRequest is used to for http requests on a remote server which can be
- * fetched in chunks, e.g. using a Range request.
+ * RemoteRequest is a generic endpoint for serving http requests. RemoteRequest
+ * handles json data, which is specified by genomic range (contig, start, stop)
+ *
  * @flow
  */
 'use strict';
 
 import Q from 'q';
-
-type Chunk = {
-  start: number;
-  stop: number;
-  buffer: Object; // TODO: generalize to Any
-}
+import ContigInterval from './ContigInterval';
 
 class RemoteRequest {
   url: string;
-  chunks: Array<Chunk>;  // regions of file that have already been loaded.
+  basePairsPerFetch: number;
   numNetworkRequests: number;  // track this for debugging/testing
 
-  constructor(url: string, key: string) {
+  constructor(url: string, basePairsPerFetch: number) {
     this.url = url;
-    this.chunks = [];
-    this.key = key;
+    this.basePairsPerFetch = basePairsPerFetch;
     this.numNetworkRequests = 0;
   }
 
-  get(contig: string, start: number, stop: number, modifier:string=""): Q.Promise<Object> {
-    
-    var length=stop -start;
+  expandRange(range: ContigInterval<string>): ContigInterval<string> {
+    var roundDown = x => x - x % this.basePairsPerFetch;
+    var newStart = Math.max(1, roundDown(range.start())),
+        newStop = roundDown(range.stop() + this.basePairsPerFetch - 1);
+    return new ContigInterval(range.contig, newStart, newStop);
+  }
+
+  getFeaturesInRange(range: ContigInterval<string>, modifier: string = ""): Q.Promise<Object> {
+    var expandedRange = this.expandRange(range);
+    return this.get(expandedRange, modifier);
+  }
+
+  get(range: ContigInterval<string>, modifier: string = ""): Q.Promise<Object> {
+
+    var length = range.stop() - range.start();
     if (length <= 0) {
-      return Q.reject(`Requested <0 bytes (${length}) from ${this.url}`);
+      return Q.reject(`Requested <0 interval (${length}) from ${this.url}`);
+    } else if (length > 5000000) {
+      throw `Monster request: Won't fetch ${length} sized ranges from ${this.url}`;
     }
-
-    // First check the cache.
-    var buf = this.getFromCache(start, stop);
-    if (buf) {
-      return Q.when(buf);
-    }
-
-    // Need to fetch from the network.
-    return this.getFromNetwork(contig, start, stop, modifier);
+    // get endpoint
+    var endpoint = this.getEndpointFromContig(range.contig, range.start(), range.stop(), modifier);
+    // Fetch from the network
+    return this.getFromNetwork(endpoint);
   }
 
-  getFromCache(start: number, stop: number): ?Object {
-    for (var i = 0; i < this.chunks.length; i++) {
-      var chunk = this.chunks[i];
-      if (chunk.start <= start && chunk.stop >= stop) {
-        return chunk.buffer.slice(start - chunk.start, stop - chunk.start + 1);
-      }
-    }
-    return null;
-  }
-
-    /**
-     * Request must be of form "url/contig?start=start&end=stop"
-    */
-  getFromNetwork(contig: string, start: number, stop: number, modifier: string = ""): Q.Promise<Object> {
-    var length = stop - start;
-    if (length > 50000000) {
-      throw `Monster request: Won't fetch ${length} bytes from ${this.url}`;
-    }
+  /**
+   * Request must be of form "url/contig?start=start&end=stop"
+  */
+  getFromNetwork(endpoint: string): Q.Promise<Object> {
     var xhr = new XMLHttpRequest();
-    var endpoint = "";
-    if (modifier.length > 0) {
-      endpoint = this.url + "/" + contig + "?start=" + start + "&end=" + stop + "&" + modifier;
-    }
-    else {
-      endpoint = this.url + "/" + contig + "?start=" + start + "&end=" + stop;
-    }
-
     xhr.open('GET', endpoint);
     xhr.responseType = 'json';
     xhr.setRequestHeader('Content-Type', 'application/json');
 
     return this.promiseXHR(xhr).then(json => {
       // extract response from promise
-      var response = json[0]; // TODO: don't store in object
-
-      // var buffer = stringToBuffer(response);
-
-      // The actual length of the response may be less than requested if it's
-      // too short, e.g. if we request bytes 0-1000 of a 500-byte file.
-      var newChunk = { start, stop, response};
-      this.chunks.push(newChunk);
-      return response;
+      return json[0];
     });
+  }
+
+  getEndpointFromContig(contig: string, start: number, stop: number, modifier: string = ""): string {
+    if (modifier.length < 1)
+      return `${this.url}/${contig}?start=${start}&end=${stop}`;
+    else
+      return `${this.url}/${contig}?start=${start}&end=${stop}&${modifier}`;
   }
 
   // Wrapper to convert XHRs to Promises.
@@ -105,27 +86,6 @@ class RemoteRequest {
     this.numNetworkRequests++;
     xhr.send();
     return deferred.promise;
-  }
-
-  // Attempting to access Content-Range directly may raise security errors.
-  // This ensures the access is safe before making it.
-  _getLengthFromContentRange(xhr: XMLHttpRequest): ?number {
-    if (!/Content-Range/i.exec(xhr.getAllResponseHeaders())) {
-      return null;
-    }
-
-    var contentRange = xhr.getResponseHeader('Content-Range');
-    var m = /\/(\d+)$/.exec(contentRange);
-    if (m) {
-      return Number(m[1]);
-    }
-    console.warn(`Received improper Content-Range value for ` +
-                 `${this.url}: ${contentRange}`);
-    return null;
-  }
-
-  clearCache() {
-    this.chunks = [];
   }
 }
 

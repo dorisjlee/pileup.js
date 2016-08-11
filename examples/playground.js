@@ -27,7 +27,8 @@ if (colorByStrand) {
 
 var p = pileup.create(document.getElementById('pileup'), {
   range: range,
-  tracks: sources
+  tracks: sources,
+  filters: filters
 });
 
 function jiggle() {
