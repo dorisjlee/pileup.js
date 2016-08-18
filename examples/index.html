@@ -3,18 +3,29 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <link rel="stylesheet" href="../style/pileup.css" />
 <link rel="stylesheet" href="demo.css" />
+<link rel="stylesheet" href="bootstrap.min.css">
+<script src="jquery.min.js"></script>
+<script src="bigSlide.js"></script>
 </head>
 
 <body>
 <button id="jiggle">FPS test</button>
-<div id="pileup"></div>
+<!-- <nav id="menu" class="panel" role="navigation">
+	Menu
+</nav>
+ -->
+ <div id="pileup"></div>
+<!-- <a href="#menu" class="menu-link">Menu Link</a> -->
 </body>
 
 <script src="../node_modules/stats.js/build/stats.min.js"></script>
 <script src="../dist/pileup.js"></script>
-<!-- or:
-<script src="../dist/pileup.min.js"></script>
--->
+<!-- <script src="../dist/pileup.min.js"></script> -->
 
 <script src="data.js"></script>
 <script src="playground.js"></script>
+<!-- <script>
+	 $(document).ready(function() {
+      $('.menu-link').bigSlide();
+  });
+</script> -->
